@@ -3,7 +3,7 @@ package commands
 import (
 	"errors"
 
-	"github.com/neetozone/neeto-engage-cli/internal/output"
+	"github.com/neetozone/neeto-cli-commons/output"
 	"github.com/spf13/cobra"
 )
 
@@ -71,5 +71,5 @@ func init() {
 
 	settingsCmd.AddCommand(settingsShowCmd)
 	settingsCmd.AddCommand(settingsUpdateCmd)
-	rootCmd.AddCommand(settingsCmd)
+	register(func(root *cobra.Command) { root.AddCommand(settingsCmd) })
 }
