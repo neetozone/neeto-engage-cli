@@ -1,0 +1,10 @@
+{
+  "name": "neetoengage",
+  "description": "NeetoEngage CLI",
+  "author": {
+    "name": "BigBinary",
+    "email": "support@neetoengage.com"
+  },
+  "homepage": "https://github.com/neetozone/neeto-engage-cli",
+  "repository": "https://github.com/neetozone/neeto-engage-cli"
+}

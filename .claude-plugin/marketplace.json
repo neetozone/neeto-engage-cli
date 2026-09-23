@@ -1,0 +1,14 @@
+{
+  "name": "neetoengage",
+  "owner": {
+    "name": "BigBinary",
+    "email": "support@neetoengage.com"
+  },
+  "plugins": [
+    {
+      "name": "neetoengage",
+      "source": "./",
+      "description": "NeetoEngage CLI"
+    }
+  ]
+}
