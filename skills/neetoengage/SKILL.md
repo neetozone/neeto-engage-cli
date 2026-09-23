@@ -16,13 +16,13 @@ Credentials for every logged-in subdomain are stored together in
 `~/.config/neetoengage/auth.json`. A command that talks to the API picks which
 subdomain to use by these rules:
 
-- 0 subdomains logged in → every credential-using command errors with
-  "not logged in. Run 'neetoengage login' to authenticate".
-- 1 subdomain logged in → that one is the implicit default; `--subdomain`
+- 0 subdomains authenticated → every credential-using command errors with
+  "Not authenticated. Run 'neetoengage login' to authenticate.".
+- 1 subdomain authenticated → that one is the implicit default; `--subdomain`
   may be omitted.
-- 2+ subdomains logged in → **`--subdomain <name>` is required** on every
+- 2+ subdomains authenticated → **`--subdomain <name>` is required** on every
   credential-using command, including `doctor`. The error lists every
-  logged-in subdomain so the agent can offer a choice.
+  authenticated subdomain so the agent can offer a choice.
 
 `login` / `logout` / `whoami` have dedicated behavior:
 
@@ -102,7 +102,7 @@ Use this whenever a user asks about a flag or command not covered below.
 | `version` | Print CLI version / commit / build date. |
 | `commands` | Emit the full command/flag catalog as JSON. |
 | `setup claude` | Install NeetoEngage plugin into Claude Code (`plugin.json`, hooks, this SKILL.md). |
-| `setup cursor` / `windsurf` / `copilot` / `gemini` / `codex` | Write IDE-specific NeetoEngage rule files. |
+| `setup cursor` / `windsurf` / `copilot` / `gemini` / `codex` | Write NeetoEngage rule files into the current project directory; re-run after an upgrade to refresh them. |
 
 ## Environment variable override
 
@@ -118,9 +118,9 @@ neetoengage login --subdomain acme
 Every command exits non-zero on failure and writes a single-line message to
 stderr. Common errors the agent should expect:
 
-- `not logged in. Run 'neetoengage login' to authenticate` — empty credential store.
-- `multiple subdomains logged in (acme, beta); specify --subdomain` — pick one.
-- `not logged in to "foo". Logged in subdomains: acme, beta` — bad `--subdomain`.
+- `Not authenticated. Run 'neetoengage login' to authenticate.` — empty credential store.
+- `Multiple subdomains authenticated (acme, beta); specify --subdomain.` — pick one.
+- `Not authenticated for "foo". Authenticated subdomains: acme, beta.` — bad `--subdomain`.
 - `required flag(s) "xxx" not set` (from cobra) — missing required flag.
 - API errors come through with the server's message body; inspect the
   JSON envelope (or the `--quiet` payload) for `error` / `errors` / `notice`
@@ -131,9 +131,12 @@ stderr. Common errors the agent should expect:
 | Command | Purpose |
 |---|---|
 | `neetoengage settings show` | Show the workspace's product name and website URL. |
-| `neetoengage settings update --product-name <name>` | Change the product name. |
+| `neetoengage settings update --product-name <name>` | Change the product name. It cannot be blank. |
 | `neetoengage settings update --website-url <url>` | Change the website URL. It must start with `http://`, `https://` or `www.`. |
 
 `settings update` takes either flag or both, and needs at least one. It prints
 the product name and website URL after the change. The public NeetoEngage
 pages link the product name and logo in their header to the website URL.
+
+`neetoengage commands` always prints the true command surface as JSON, so use
+it to check this section against the binary.

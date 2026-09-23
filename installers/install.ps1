@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $BaseUrl = "https://neeto-downloads.s3.amazonaws.com/cli/NeetoEngage/latest"
-$InstallDir = "$env:LOCALAPPDATA\Programs\neetoengage"
+$InstallDir = if ($env:NEETOENGAGE_INSTALL_DIR) { $env:NEETOENGAGE_INSTALL_DIR } else { "$env:LOCALAPPDATA\Programs\neetoengage" }
 
 $Arch = if ([Environment]::Is64BitOperatingSystem) {
   if ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { "arm64" } else { "amd64" }
@@ -13,25 +13,66 @@ $Arch = if ([Environment]::Is64BitOperatingSystem) {
 $Archive = "neetoengage_windows_${Arch}.zip"
 $Url = "${BaseUrl}/${Archive}"
 
-Write-Host "Downloading NeetoEngage CLI for windows/${Arch}..."
 $TmpDir = New-TemporaryFile | ForEach-Object { Remove-Item $_; New-Item -ItemType Directory -Path $_ }
-$ZipPath = Join-Path $TmpDir $Archive
 
-Invoke-WebRequest -Uri $Url -OutFile $ZipPath
+try {
+  $ZipPath = Join-Path $TmpDir $Archive
 
-Write-Host "Extracting..."
-Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
+  Write-Host "Downloading NeetoEngage CLI for windows/${Arch}..."
+  Invoke-WebRequest -Uri $Url -OutFile $ZipPath
 
-Write-Host "Installing to ${InstallDir}..."
-New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
-Copy-Item (Join-Path $TmpDir "neetoengage.exe") -Destination (Join-Path $InstallDir "neetoengage.exe") -Force
+  Write-Host "Verifying checksum..."
+  $SumsPath = Join-Path $TmpDir "SHA256SUMS"
+  Invoke-WebRequest -Uri "${BaseUrl}/SHA256SUMS" -OutFile $SumsPath
 
-$UserPath = [Environment]::GetEnvironmentVariable("Path", "User")
-if ($UserPath -notlike "*$InstallDir*") {
-  [Environment]::SetEnvironmentVariable("Path", "$UserPath;$InstallDir", "User")
-  Write-Host "Added ${InstallDir} to user PATH."
+  $Expected = $null
+  foreach ($Line in Get-Content $SumsPath) {
+    $Parts = $Line.Trim() -split "\s+", 2
+    if ($Parts.Count -eq 2 -and $Parts[1].TrimStart("*") -eq $Archive) { $Expected = $Parts[0] }
+  }
+  if (-not $Expected) {
+    throw "No published checksum for ${Archive}. Aborting."
+  }
+
+  $Actual = (Get-FileHash -Path $ZipPath -Algorithm SHA256).Hash
+  if ($Expected -ne $Actual) {
+    throw "Checksum mismatch for ${Archive}. Aborting.`n  expected: ${Expected}`n  actual:   ${Actual}"
+  }
+
+  Write-Host "Extracting..."
+  Expand-Archive -Path $ZipPath -DestinationPath $TmpDir -Force
+
+  Write-Host "Installing to ${InstallDir}..."
+  New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+  Copy-Item (Join-Path $TmpDir "neetoengage.exe") -Destination (Join-Path $InstallDir "neetoengage.exe") -Force
+
+  try {
+    $Key = [Microsoft.Win32.Registry]::CurrentUser.CreateSubKey("Environment")
+    $PathChanged = $false
+    try {
+      $Kind = try { $Key.GetValueKind("Path") } catch { [Microsoft.Win32.RegistryValueKind]::ExpandString }
+      $UserPath = [string]$Key.GetValue("Path", "", [Microsoft.Win32.RegistryValueOptions]::DoNotExpandEnvironmentNames)
+      $Target = $InstallDir.TrimEnd("\")
+      $Entries = @($UserPath -split ";" | ForEach-Object { $_.Trim().TrimEnd("\") })
+      if ($Entries -notcontains $Target) {
+        $Updated = if ($UserPath.Trim() -eq "") { $InstallDir } else { $UserPath.TrimEnd(";") + ";" + $InstallDir }
+        $Key.SetValue("Path", $Updated, $Kind)
+        $PathChanged = $true
+      }
+    } finally {
+      $Key.Dispose()
+    }
+
+    if ($PathChanged) {
+      [Environment]::SetEnvironmentVariable("NeetoPathRefresh", "1", "User")
+      [Environment]::SetEnvironmentVariable("NeetoPathRefresh", $null, "User")
+      Write-Host "Added ${InstallDir} to user PATH."
+    }
+  } catch {
+    Write-Host "Could not update your PATH automatically. Add ${InstallDir} to your PATH manually."
+  }
+} finally {
+  Remove-Item -Recurse -Force $TmpDir -ErrorAction SilentlyContinue
 }
-
-Remove-Item -Recurse -Force $TmpDir
 
 Write-Host "NeetoEngage CLI installed successfully. Restart your terminal and run 'neetoengage --help' to get started."

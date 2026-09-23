@@ -1,0 +1,12 @@
+pretty_name: NeetoEngage
+binary_name: neetoengage
+short_description: NeetoEngage CLI
+long_description: A command-line interface for NeetoEngage.
+docs_url: https://github.com/neetozone/neeto-engage-cli
+api_base_path: /api/external/v1
+tenancy: subdomain
+root_examples:
+  - neetoengage settings show
+  - neetoengage settings update --website-url https://example.com
+priority_fields: [sid, id, name, title, email, first_name, last_name, status, state, kind, type, slug]
+commons_version: v1.1.1

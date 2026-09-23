@@ -1,7 +1,8 @@
 # NeetoEngage CLI
 
-A command-line interface for NeetoEngage.
+NeetoEngage CLI
 
+<!-- neeto-cli-commons:installation:start -->
 ## Installation
 
 ### macOS / Linux
@@ -9,41 +10,76 @@ A command-line interface for NeetoEngage.
 **Homebrew (recommended on macOS):**
 
 ```bash
-brew install neetozone/homebrew-tap/neetoengage
+brew install neetozone/tap/neetoengage
 ```
 
 **Shell script:**
 
 ```bash
-curl -fsSL https://neetoengage.com/cli/install.sh | sh
+curl -fsSL https://neeto-downloads.s3.amazonaws.com/cli/NeetoEngage/latest/install.sh | sh
 ```
+
+This verifies the download's SHA-256 checksum against the published `SHA256SUMS`,
+then installs to `/usr/local/bin` (may prompt for sudo). Set `NEETOENGAGE_INSTALL_DIR`
+to a directory you own to install without sudo.
 
 ### Windows
 
 **PowerShell:**
 
 ```powershell
-irm https://neetoengage.com/cli/install.ps1 | iex
+irm https://neeto-downloads.s3.amazonaws.com/cli/NeetoEngage/latest/install.ps1 | iex
 ```
 
 **Command Prompt (CMD):**
 
 ```cmd
-curl -fsSL https://neetoengage.com/cli/install.cmd -o install.cmd && install.cmd
+curl -fsSL https://neeto-downloads.s3.amazonaws.com/cli/NeetoEngage/latest/install.cmd -o install.cmd && install.cmd
 ```
 
+Both verify the download's SHA-256 checksum before installing to
+`%LOCALAPPDATA%\Programs\neetoengage` and adding it to your user PATH. Set
+`NEETOENGAGE_INSTALL_DIR` to install somewhere else.
+<!-- neeto-cli-commons:installation:end -->
+
+<!-- neeto-cli-commons:verify-installation:start -->
 ### Verify installation
 
 ```bash
 neetoengage --help
 ```
+<!-- neeto-cli-commons:verify-installation:end -->
 
+<!-- neeto-cli-commons:ai-coding-assistants:start -->
+## AI coding assistants
+
+```bash
+neetoengage setup claude      # Register plugin with Claude Code
+neetoengage setup cursor      # Write .cursor/rules/neetoengage.mdc
+neetoengage setup windsurf    # Write .windsurf/rules/neetoengage.md
+neetoengage setup copilot     # Add a NeetoEngage section to .github/copilot-instructions.md
+neetoengage setup gemini      # Add a NeetoEngage section to GEMINI.md
+neetoengage setup codex       # Add a NeetoEngage section to AGENTS.md
+```
+
+Every command except `setup claude` writes into the current project directory, so
+run these commands from the root of the project the assistant works in. Re-run
+them after every upgrade: `setup cursor` and `setup windsurf` overwrite their rule
+file, while `setup copilot`, `setup gemini` and `setup codex` keep the existing
+content of their file and replace only the NeetoEngage section instead of adding a
+duplicate.
+<!-- neeto-cli-commons:ai-coding-assistants:end -->
+
+<!-- neeto-cli-commons:prerequisites:start -->
 ## Prerequisites (development)
 
 - [Go](https://go.dev/dl/) 1.26.1+
 - Access to a NeetoEngage organization
+<!-- neeto-cli-commons:prerequisites:end -->
 
 ## Development
+
+### Setup
 
 ```bash
 git clone https://github.com/neetozone/neeto-engage-cli.git
@@ -53,6 +89,14 @@ bin/setup
 
 This installs Go dependencies, golangci-lint, configures git hooks, and builds the binary.
 
+### Build and run
+
+```bash
+make build
+./neetoengage --help
+```
+
+<!-- neeto-cli-commons:make-targets:start -->
 ### Make targets
 
 ```bash
@@ -65,16 +109,26 @@ make check          # fmt + vet + test
 make install        # Installs to /usr/local/bin
 make clean          # Remove built binary
 ```
+<!-- neeto-cli-commons:make-targets:end -->
+
+### Adding a command
+
+`internal/commands/example.go` is a working two-command resource — a `list` and a
+`show`. Copy it, rename the resource, point it at the right API path, and delete the
+example. Registration happens in `init()`, so a new file needs no wiring anywhere else.
 
 ### Pointing to a local or staging server
 
-Set `NEETOENGAGE_BASE_URL` to override the default `https://<subdomain>.neetoengage.com`:
+By default the CLI targets `https://{subdomain}.neetoengage.com`. Set `NEETOENGAGE_BASE_URL`
+to point somewhere else:
 
 ```bash
-export NEETOENGAGE_BASE_URL=http://acme.lvh.me:8980
+export NEETOENGAGE_BASE_URL=http://acme.lvh.me:3000
 neetoengage login --subdomain acme
+neetoengage doctor
 ```
 
+<!-- neeto-cli-commons:global-flags:start -->
 ## Global flags
 
 Every command accepts:
@@ -85,31 +139,21 @@ Every command accepts:
 | `--json` | Force JSON envelope output. |
 | `--quiet` | Emit raw data only. Action commands print just the identifier; `delete` prints `success`. |
 | `--toon` | TOON (Token-Optimized Output Notation) — compact format for LLMs. |
+| `--verbose` | Expand every field of a record instead of a table. |
+<!-- neeto-cli-commons:global-flags:end -->
 
-## Adding product-specific commands
-
-See [`docs/adding-commands.md`](docs/adding-commands.md) for the step-by-step
-workflow for adding new resource commands that use the built-in auth, HTTP
-client, and output helpers.
-
-Quick API wrapper reference: [`docs/api-wrapper-reference.md`](docs/api-wrapper-reference.md).
-
+<!-- neeto-cli-commons:release:start -->
 ## Release
 
 Releases are cut by BigBinary's CI pipeline defined in
 `.neetoci/release.yml`. Merging a PR with a `major` / `minor` / `patch`
-label to `main` triggers `.scripts/release.sh`, which tags the current
-VERSION, runs GoReleaser, uploads artifacts to
-`s3://neeto-downloads/cli/NeetoEngage/`, updates the Homebrew tap
-(`neetozone/homebrew-tap`), and opens the next-version bump PR.
+label to `main` triggers the shared release script published by
+`neeto-cli-commons`, which bumps and tags VERSION, runs GoReleaser,
+uploads artifacts to `s3://neeto-downloads/cli/NeetoEngage/`, updates the
+Homebrew tap (`neetozone/tap`), and pushes the version bump commit
+straight to `main`.
+<!-- neeto-cli-commons:release:end -->
 
-## AI coding assistants
+## Support
 
-```bash
-neetoengage setup claude      # Register plugin with Claude Code
-neetoengage setup cursor      # Write .cursor/rules/neetoengage.mdc
-neetoengage setup windsurf    # Write .windsurf/rules/neetoengage.md
-neetoengage setup copilot     # Append to .github/copilot-instructions.md
-neetoengage setup gemini      # Append to GEMINI.md
-neetoengage setup codex       # Append to AGENTS.md
-```
+Questions or problems: support@neetoengage.com
