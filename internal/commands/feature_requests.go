@@ -192,7 +192,7 @@ func init() {
 	featureRequestsSearchCmd.Flags().Int("limit", 0, "Maximum requests to return (default 8, max 15)")
 	_ = featureRequestsSearchCmd.MarkFlagRequired("query")
 
-	featureRequestsCreateCmd.Flags().String("title", "", "Short title, at most 120 characters. Shown publicly.")
+	featureRequestsCreateCmd.Flags().String("title", "", "Short title of the request. Shown publicly.")
 	featureRequestsCreateCmd.Flags().String("description", "", "Short description of the request. Shown publicly.")
 	_ = featureRequestsCreateCmd.MarkFlagRequired("title")
 	_ = featureRequestsCreateCmd.MarkFlagRequired("description")
