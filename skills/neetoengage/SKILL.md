@@ -133,7 +133,6 @@ stderr. Common errors the agent should expect:
 | `neetoengage settings show` | Show the workspace's product name and website URL. |
 | `neetoengage settings update --product-name <name>` | Change the product name. It cannot be blank. |
 | `neetoengage settings update --website-url <url>` | Change the website URL. It must start with `http://`, `https://` or `www.`. |
-
 | `neetoengage feature-requests search --query <words>` | Search public feature requests. Shows each match's `admin_url`, `track` and `votes_count`. |
 | `neetoengage feature-requests create --title <t> --description <d> --customer-email <e> --customer-name <n> --note <note>` | Create a feature request. The customer becomes its first voter and the note is a private team note. |
 | `neetoengage feature-requests add-voter <id> --customer-email <e> --customer-name <n> --note <note>` | Add a customer as a voter on an existing request and attach a private note. |
