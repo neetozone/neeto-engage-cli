@@ -133,6 +133,36 @@ stderr. Common errors the agent should expect:
 | `neetoengage settings show` | Show the workspace's product name and website URL. |
 | `neetoengage settings update --product-name <name>` | Change the product name. It cannot be blank. |
 | `neetoengage settings update --website-url <url>` | Change the website URL. It must start with `http://`, `https://` or `www.`. |
+| `neetoengage feature-requests search --query <words>` | Search public feature requests. Shows each match's `admin_url`, `track` and `votes_count`. |
+| `neetoengage feature-requests create --title <t> --description <d> --customer-email <e> --customer-name <n> --note <note>` | Create a feature request. The customer becomes its first voter and the note is a private team note. |
+| `neetoengage feature-requests add-voter <id> --customer-email <e> --customer-name <n> --note <note>` | Add a customer as a voter on an existing request and attach a private note. |
+| `neetoengage feature-requests voters <id>` | List who voted for a request. |
+| `neetoengage feature-requests move <id> --track-id <track-id>` | Move a request to another track (board column). Add `--notify-all-voters` to email voters, `--message <html>` to replace the default "now live" email, `--changelog-id <id>` to attach a changelog. |
+| `neetoengage feature-requests comment <id> --content <text>` | Post a public comment. Add `--notify-all-voters` to email it to every voter. |
+| `neetoengage votes list --email <email>` | List the requests a customer voted for, with admin links. |
+| `neetoengage tracks list` | List the tracks (board columns) and their IDs. |
+| `neetoengage changelogs list --query <title>` | List changelogs that are not archived, to find one to attach. |
+
+`<id>` is a feature request's ID or the slug at the end of its admin URL.
+
+### Filing a customer's request
+
+1. Run `feature-requests search` with the gist of the request. Show the user the
+   matches with their `admin_url`, `track` and `votes_count`, and ask whether one
+   is the same request.
+2. On a match, run `feature-requests add-voter` on it. Otherwise run
+   `feature-requests create`.
+3. The title, the description and comments are public on the roadmap. Never put
+   the customer's name, email, company or ticket details in them. Those go only
+   in `--note`, which only the team can see.
+4. Write the note in this format, one item per line: the product and ticket or
+   conversation it came from; the customer's name and email; what the customer
+   asked for; a link to the ticket.
+5. Show the user the request's `admin_url`.
+
+To tell voters a feature shipped, run `tracks list` to find the done track, then
+`feature-requests move <id> --track-id <done-track-id> --notify-all-voters`, with
+`--changelog-id` from `changelogs list` when there is a changelog.
 
 `settings update` takes either flag or both, and needs at least one. It prints
 the product name and website URL after the change. The public NeetoEngage

@@ -8,5 +8,7 @@ tenancy: subdomain
 root_examples:
   - neetoengage settings show
   - neetoengage settings update --website-url https://example.com
-priority_fields: [sid, id, name, title, email, first_name, last_name, status, state, kind, type, slug]
+  - neetoengage feature-requests search --query "dark mode"
+  - neetoengage votes list --email oliver@example.com
+priority_fields: [sid, id, name, title, email, first_name, last_name, status, track, votes_count, state, kind, type, slug]
 commons_version: v1.1.4
