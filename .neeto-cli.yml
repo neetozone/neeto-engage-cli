@@ -11,4 +11,4 @@ root_examples:
   - neetoengage feature-requests search --query "dark mode"
   - neetoengage votes list --email oliver@example.com
 priority_fields: [sid, id, name, title, email, first_name, last_name, status, track, votes_count, state, kind, type, slug]
-commons_version: 6c0feab158c2b5cfa8182ff1855adca70d98b3d5
+commons_version: v2.0.0
