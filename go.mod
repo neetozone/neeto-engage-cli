@@ -1,9 +1,9 @@
 module github.com/neetozone/neeto-engage-cli
 
-go 1.26.1
+go 1.27.3
 
 require (
-	github.com/neetozone/neeto-cli-commons v1.2.1
+	github.com/neetozone/neeto-cli-commons/v2 v2.0.0-20261110152334-a618d2a705b8
 	github.com/spf13/cobra v1.10.2
 )
 
